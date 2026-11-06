@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherWave Pro — Telegram Cloud Hi-Fi Music Player</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    animation: {
+                        'spin-vinyl': 'spin 12s linear infinite',
+                        'float-slow': 'float 7s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.4, transform: 'scale(1)' },
+                            '50%': { opacity: 0.75, transform: 'scale(1.06)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --accent-tertiary: #c084fc;
+            --glow-rgb: 56, 189, 248;
+        }
+
+        body.theme-cyber {
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --accent-tertiary: #c084fc;
+            --glow-rgb: 56, 189, 248;
+        }
+        body.theme-neon-purple {
+            --accent-primary: #c084fc;
+            --accent-secondary: #f43f5e;
+            --accent-tertiary: #fb923c;
+            --glow-rgb: 192, 132, 252;
+        }
+        body.theme-emerald {
+            --accent-primary: #10b981;
+            --accent-secondary: #06b6d4;
+            --accent-tertiary: #3b82f6;
+            --glow-rgb: 16, 185, 129;
+        }
+        body.theme-sunset {
+            --accent-primary: #f97316;
+            --accent-secondary: #ec4899;
+            --accent-tertiary: #8b5cf6;
+            --glow-rgb: 249, 115, 22;
+        }
+
+        /* Custom subtle scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(var(--glow-rgb), 0.6);
+        }
+
+        /* Ultra-Clean Glassmorphism */
+        .glass-panel {
+            background: rgba(10, 15, 29, 0.72);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65),
+                        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(var(--glow-rgb), 0.35);
+            transform: translateY(-1px);
+        }
+
+        .glass-pill {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            backdrop-filter: blur(12px);
+        }
+
+        /* Realistic Vinyl Grooves */
+        .vinyl-disc {
+            background: 
+                radial-gradient(circle at center, transparent 30%, rgba(255,255,255,0.03) 31%, transparent 32%),
+                radial-gradient(circle at center, transparent 42%, rgba(255,255,255,0.025) 43%, transparent 44%),
+                radial-gradient(circle at center, transparent 55%, rgba(255,255,255,0.03) 56%, transparent 57%),
+                radial-gradient(circle at center, transparent 67%, rgba(255,255,255,0.02) 68%, transparent 69%),
+                conic-gradient(from 0deg, #090d16, #161f33 25%, #090d16 50%, #161f33 75%, #090d16);
+            box-shadow: 0 0 65px -10px rgba(var(--glow-rgb), 0.4),
+                        inset 0 0 20px rgba(0,0,0,0.9);
+        }
+
+        .vinyl-paused {
+            animation-play-state: paused !important;
+        }
+
+        /* Tonearm Smooth Pivot */
+        .tonearm-assembly {
+            transform-origin: 24px 24px;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tonearm-idle {
+            transform: rotate(-32deg);
+        }
+        .tonearm-active {
+            transform: rotate(6deg);
+        }
+
+        /* Custom Range Input */
+        input[type=range].pro-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type=range].pro-slider::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        input[type=range].pro-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 12px rgba(var(--glow-rgb), 1), 0 0 4px #fff;
+            margin-top: -5px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        input[type=range].pro-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            box-shadow: 0 0 18px rgba(var(--glow-rgb), 1), 0 0 8px #fff;
+        }
+
+        /* Dynamic Accent Gradient Button */
+        .btn-accent-grad {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+            box-shadow: 0 10px 30px -5px rgba(var(--glow-rgb), 0.55);
+        }
+        .btn-accent-grad:hover {
+            box-shadow: 0 15px 35px -3px rgba(var(--glow-rgb), 0.75);
+        }
+
+        .accent-text {
+            color: var(--accent-primary);
+        }
+
+        .active-track-border {
+            border-color: rgba(var(--glow-rgb), 0.55) !important;
+            background: linear-gradient(90deg, rgba(var(--glow-rgb), 0.16) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
+        }
+
+        /* Animated Mini Equalizer Bars */
+        @keyframes eqBar1 { 0%, 100% { height: 4px; } 50% { height: 15px; } }
+        @keyframes eqBar2 { 0%, 100% { height: 14px; } 33% { height: 5px; } 66% { height: 16px; } }
+        @keyframes eqBar3 { 0%, 100% { height: 7px; } 40% { height: 16px; } 80% { height: 4px; } }
+        .eq-bar-1 { animation: eqBar1 0.8s ease-in-out infinite; }
+        .eq-bar-2 { animation: eqBar2 0.65s ease-in-out infinite; }
+        .eq-bar-3 { animation: eqBar3 0.9s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden theme-cyber selection:bg-sky-500 selection:text-white">
+
+    <!-- Live Interactive Starfield & Nebula Particle Canvas -->
+    <canvas id="bgParticleCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-70"></canvas>
+
+    <!-- Atmospheric Dynamic Glow Blobs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div id="bgGlow1" class="absolute -top-36 -left-36 w-[28rem] h-[28rem] rounded-full blur-[150px] opacity-35 bg-sky-500 transition-all duration-1000"></div>
+        <div id="bgGlow2" class="absolute top-1/3 -right-36 w-[32rem] h-[32rem] rounded-full blur-[170px] opacity-25 bg-indigo-600 transition-all duration-1000"></div>
+        <div id="bgGlow3" class="absolute -bottom-40 left-1/4 w-96 h-96 rounded-full blur-[150px] opacity-20 bg-purple-600 transition-all duration-1000"></div>
+    </div>
+
+    <!-- Main Application Shell -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- Top Navigation Bar -->
+        <header class="glass-panel sticky top-0 z-30 px-4 md:px-8 py-3 flex items-center justify-between border-b border-white/10">
+            <!-- Brand Identity -->
+            <div class="flex items-center space-x-3.5">
+                <div class="relative group cursor-pointer" onclick="triggerBassDropHighlight()">
+                    <div class="w-11 h-11 rounded-2xl btn-accent-grad flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-105">
+                        <i class="fa-brands fa-telegram text-2xl text-white drop-shadow"></i>
+                    </div>
+                    <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 animate-pulse" title="DSP Audio Engine Ready"></span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-display font-bold text-lg md:text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-sky-300 bg-clip-text text-transparent">
+                            AetherWave
+                        </h1>
+                        <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-400/20 font-semibold">
+                            PRO 2.5
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-medium tracking-wide flex items-center gap-1.5">
+                        <span>Telegram Cloud Hi-Fi Deck</span>
+                        <span class="text-slate-600">&bull;</span>
+                        <span id="liveBpmLabel" class="font-mono text-sky-400/90">24-Bit DSP</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Live Center Status Pill (Desktop) -->
+            <div class="hidden xl:flex items-center space-x-3 glass-pill px-4 py-1.5 rounded-full text-xs">
+                <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span id="playerStatusText" class="font-medium text-slate-200">Studio Ready</span>
+                <span class="text-slate-600">|</span>
+                <span id="cloudStatusBadge" class="font-mono text-[11px] text-sky-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-wave-square"></i> Cloud Synth Ready
+                </span>
+            </div>
+
+            <!-- Right Actions Toolbar -->
+            <div class="flex items-center space-x-2 md:space-x-2.5">
+                <!-- Sleep Timer Button -->
+                <button id="sleepTimerBtn" title="Set Sleep Timer" class="px-3 py-2 rounded-xl glass-card text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5">
+                    <i class="fa-regular fa-clock text-sky-400"></i>
+                    <span id="sleepTimerLabel" class="hidden sm:inline font-mono">Timer</span>
+                </button>
+
+                <!-- Local File Drop Trigger -->
+                <label for="localAudioInput" title="Play Local Audio Files" class="cursor-pointer px-3 py-2 rounded-xl glass-card text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-folder-plus text-emerald-400"></i>
+                    <span class="hidden md:inline">Local Files</span>
+                    <input id="localAudioInput" type="file" accept="audio/*" multiple class="hidden">
+                </label>
+
+                <!-- Theme Selector -->
+                <div class="relative">
+                    <button id="themeToggleBtn" title="Switch Visual Theme" class="p-2.5 rounded-xl glass-card text-slate-300 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                        <span class="hidden sm:inline">Aura</span>
+                    </button>
+                    <div id="themeDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-2xl glass-panel shadow-2xl py-1.5 z-50 border border-white/15 text-xs font-medium">
+                        <div class="px-3 py-1 text-[10px] font-mono uppercase text-slate-400 border-b border-white/5 mb-1">Ambient Color Themes</div>
+                        <button onclick="setTheme('theme-cyber')" class="w-full text-left px-3.5 py-2 hover:bg-white/10 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-400 shadow-sm shadow-sky-400"></span> Cyber Blue</span>
+                            <i class="fa-solid fa-check text-[10px] text-sky-400 theme-check" data-theme="theme-cyber"></i>
+                        </button>
+                        <button onclick="setTheme('theme-neon-purple')" class="w-full text-left px-3.5 py-2 hover:bg-white/10 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500 shadow-sm shadow-purple-500"></span> Neon Velvet</span>
+                            <i class="fa-solid fa-check text-[10px] text-purple-400 hidden theme-check" data-theme="theme-neon-purple"></i>
+                        </button>
+                        <button onclick="setTheme('theme-emerald')" class="w-full text-left px-3.5 py-2 hover:bg-white/10 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span> Emerald Matrix</span>
+                            <i class="fa-solid fa-check text-[10px] text-emerald-400 hidden theme-check" data-theme="theme-emerald"></i>
+                        </button>
+                        <button onclick="setTheme('theme-sunset')" class="w-full text-left px-3.5 py-2 hover:bg-white/10 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500 shadow-sm shadow-orange-500"></span> Sunset Horizon</span>
+                            <i class="fa-solid fa-check text-[10px] text-orange-400 hidden theme-check" data-theme="theme-sunset"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Telegram Cloud Config Trigger -->
+                <button id="openConfigBtn" class="px-3.5 py-2 rounded-xl btn-accent-grad text-white text-xs font-semibold flex items-center gap-2 transition duration-200 hover:scale-[1.02] active:scale-95">
+                    <i class="fa-brands fa-telegram text-sm"></i>
+                    <span id="configBtnText">Telegram Sync</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Studio Workspace Grid -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- LEFT DECK: Turntable, Multi-Visualizer, DSP Equalizer & Controls (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col space-y-5">
+
+                <div class="glass-panel rounded-3xl p-5 md:p-7 flex flex-col items-center relative overflow-hidden">
+
+                    <!-- Top Deck Telemetry & Visualizer Mode Selector -->
+                    <div class="w-full flex flex-wrap items-center justify-between gap-2 text-xs mb-2 z-20">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-lg glass-pill font-mono text-[11px] text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-microchip text-sky-400"></i>
+                                <span id="sourceTypeBadge">CLOUD STREAM</span>
+                            </span>
+                            <button id="likeCurrentBtn" onclick="toggleFavoriteCurrent()" title="Favorite Track" class="w-7 h-7 rounded-lg glass-pill flex items-center justify-center text-slate-400 hover:text-rose-400 transition">
+                                <i id="likeCurrentIcon" class="fa-regular fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <!-- Visualizer Mode Switcher -->
+                        <div class="flex items-center gap-1 glass-pill p-1 rounded-xl">
+                            <button onclick="setVisualizerMode('bars')" id="visBtn-bars" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/10 text-white transition">Bars</button>
+                            <button onclick="setVisualizerMode('wave')" id="visBtn-wave" class="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white transition">Wave</button>
+                            <button onclick="setVisualizerMode('orb')" id="visBtn-orb" class="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white transition">Pulse</button>
+                            <button id="toggleEqDrawerBtn" title="Toggle 3-Band EQ & Speed DSP" class="ml-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-sky-400 hover:bg-sky-500/10 transition flex items-center gap-1">
+                                <i class="fa-solid fa-sliders"></i> DSP
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Turntable & Radial Visualizer Stage -->
+                    <div class="relative my-3 flex items-center justify-center w-64 h-64 md:w-72 md:h-72">
+                        <!-- Ambient Radial Visualizer Canvas -->
+                        <canvas id="ambientVisualizer" width="360" height="360" class="absolute pointer-events-none -inset-6 w-[calc(100%+48px)] h-[calc(100%+48px)] z-0"></canvas>
+
+                        <!-- Spinning Vinyl Platter -->
+                        <div id="vinylWrapper" class="w-56 h-56 md:w-64 md:h-64 rounded-full p-3 vinyl-disc border-4 border-slate-800/80 relative z-10 animate-spin-vinyl vinyl-paused transition-shadow duration-700 flex items-center justify-center">
+                            <!-- Vinyl Specular Sheen -->
+                            <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
+
+                            <!-- Center Album Cover Art -->
+                            <div id="albumArtwork" class="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden shadow-2xl relative flex items-center justify-center bg-slate-900 border-2 border-white/20">
+                                <i id="defaultArtIcon" class="fa-solid fa-compact-disc text-3xl text-sky-400"></i>
+                                <img id="customArtImg" src="" alt="Track Cover" class="hidden w-full h-full object-cover">
+                                <!-- Turntable Center Spindle -->
+                                <div class="absolute w-4 h-4 rounded-full bg-slate-950 border-2 border-slate-400 shadow-inner z-20"></div>
+                            </div>
+                        </div>
+
+                        <!-- Realistic Mechanical Tonearm SVG -->
+                        <div id="tonearm" class="tonearm-assembly tonearm-idle absolute -top-2 -right-3 w-24 h-44 pointer-events-none z-20">
+                            <svg viewBox="0 0 100 180" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-2xl">
+                                <!-- Base Pivot -->
+                                <circle cx="24" cy="24" r="18" fill="#1E293B" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+                                <circle cx="24" cy="24" r="10" fill="#475569"/>
+                                <!-- Arm Rod -->
+                                <path d="M24 24 L28 115 L14 148" stroke="url(#armGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Cartridge Head -->
+                                <rect x="6" y="142" width="14" height="22" rx="3" transform="rotate(22 6 142)" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+                                <defs>
+                                    <linearGradient id="armGrad" x1="24" y1="24" x2="14" y2="148" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#94A3B8"/>
+                                        <stop offset="0.5" stop-color="#E2E8F0"/>
+                                        <stop offset="1" stop-color="#64748B"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Live DSP 3-Band Equalizer & Playback Speed Drawer -->
+                    <div id="dspDrawer" class="hidden w-full glass-card rounded-2xl p-4 my-2 z-20 border border-sky-500/20 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-display font-bold uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wave-square"></i> Real-Time WebAudio Equalizer & Speed
+                            </span>
+                            <button onclick="resetEqAndSpeed()" class="text-[11px] font-mono text-slate-400 hover:text-white underline">Reset Flat</button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                            <!-- Bass 100Hz -->
+                            <div class="flex flex-col space-y-1">
+                                <div class="flex justify-between text-[11px] font-mono">
+                                    <span class="text-slate-400">BASS</span>
+                                    <span id="eqBassVal" class="text-sky-400">0 dB</span>
+                                </div>
+                                <input id="eqBassSlider" type="range" min="-12" max="12" step="1" value="0" class="pro-slider w-full">
+                            </div>
+                            <!-- Mid 1kHz -->
+                            <div class="flex flex-col space-y-1">
+                                <div class="flex justify-between text-[11px] font-mono">
+                                    <span class="text-slate-400">MID</span>
+                                    <span id="eqMidVal" class="text-sky-400">0 dB</span>
+                                </div>
+                                <input id="eqMidSlider" type="range" min="-12" max="12" step="1" value="0" class="pro-slider w-full">
+                            </div>
+                            <!-- Treble 8kHz -->
+                            <div class="flex flex-col space-y-1">
+                                <div class="flex justify-between text-[11px] font-mono">
+                                    <span class="text-slate-400">TREBLE</span>
+                                    <span id="eqTrebleVal" class="text-sky-400">0 dB</span>
+                                </div>
+                                <input id="eqTrebleSlider" type="range" min="-12" max="12" step="1" value="0" class="pro-slider w-full">
+                            </div>
+                            <!-- Speed / Pitch -->
+                            <div class="flex flex-col space-y-1">
+                                <div class="flex justify-between text-[11px] font-mono">
+                                    <span class="text-slate-400">SPEED</span>
+                                    <span id="speedVal" class="text-emerald-400">1.0x</span>
+                                </div>
+                                <input id="speedSlider" type="range" min="0.75" max="1.5" step="0.05" value="1" class="pro-slider w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Primary High-FPS Audio Spectrum Canvas -->
+                    <div class="w-full h-16 my-1 flex items-center justify-center px-2">
+                        <canvas id="frequencyCanvas" width="600" height="72" class="w-full h-full rounded-xl"></canvas>
+                    </div>
+
+                    <!-- Track Title & Artist Metadata -->
+                    <div class="text-center z-10 max-w-lg w-full px-2 mt-1">
+                        <h2 id="currentTrackTitle" class="text-xl md:text-2xl font-bold font-display text-white truncate tracking-tight">
+                            Select a Track to Begin
+                        </h2>
+                        <p id="currentTrackArtist" class="text-xs md:text-sm font-medium text-sky-400/90 truncate mt-1">
+                            AetherWave Cloud Synthesizer &bull; Telegram Ready
+                        </p>
+                    </div>
+
+                    <!-- Seek Bar & High-Precision Timers -->
+                    <div class="w-full mt-5 space-y-2 z-10 px-1">
+                        <div class="relative flex items-center">
+                            <input id="seekSlider" type="range" min="0" max="100" value="0" step="0.1"
+                                class="pro-slider w-full focus:outline-none">
+                        </div>
+                        <div class="flex justify-between text-[11px] font-mono text-slate-400">
+                            <span id="currentTime">00:00</span>
+                            <span id="trackQualityTag" class="text-[10px] text-slate-500 uppercase tracking-widest">STEREO 48KHZ</span>
+                            <span id="durationTime">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Master Transport Controls -->
+                    <div class="flex items-center justify-center gap-4 md:gap-7 mt-4 z-10">
+                        <button id="shuffleBtn" title="Shuffle Queue (S)" class="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition">
+                            <i class="fa-solid fa-shuffle text-sm"></i>
+                        </button>
+
+                        <button id="prevBtn" title="Previous Track" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-200 hover:text-white active:scale-95 transition">
+                            <i class="fa-solid fa-backward-step text-base"></i>
+                        </button>
+
+                        <button id="playPauseBtn" title="Play / Pause (Space)" class="w-16 h-16 rounded-3xl btn-accent-grad text-white flex items-center justify-center text-xl hover:scale-105 active:scale-95 transition duration-200">
+                            <i id="playIcon" class="fa-solid fa-play ml-1"></i>
+                        </button>
+
+                        <button id="nextBtn" title="Next Track" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-200 hover:text-white active:scale-95 transition">
+                            <i class="fa-solid fa-forward-step text-base"></i>
+                        </button>
+
+                        <button id="repeatBtn" title="Repeat Track (R)" class="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition">
+                            <i class="fa-solid fa-repeat text-sm"></i>
+                        </button>
+                    </div>
+
+                    <!-- Footer Deck Bar: Volume, Direct Link & Download -->
+                    <div class="w-full flex flex-wrap items-center justify-between gap-3 mt-6 pt-4 border-t border-white/10 text-slate-400 text-xs px-1">
+                        <!-- Volume Control -->
+                        <div class="flex items-center gap-2.5">
+                            <button id="muteBtn" title="Mute / Unmute (M)" class="w-7 h-7 rounded-lg hover:bg-white/5 hover:text-white flex items-center justify-center transition">
+                                <i id="volumeIcon" class="fa-solid fa-volume-high text-xs"></i>
+                            </button>
+                            <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.85"
+                                class="pro-slider w-24 md:w-28">
+                            <span id="volumePercent" class="font-mono text-[10px] text-slate-500 w-8">85%</span>
+                        </div>
+
+                        <!-- Stream Utilities -->
+                        <div class="flex items-center gap-2">
+                            <button id="directFileBtn" title="Copy Stream Endpoint" class="px-3 py-1.5 rounded-xl glass-card hover:text-sky-300 transition flex items-center gap-1.5 text-[11px] font-medium">
+                                <i class="fa-solid fa-link"></i>
+                                <span>Copy Link</span>
+                            </button>
+                            <button id="downloadBtn" title="Download Audio File" class="px-3 py-1.5 rounded-xl glass-card hover:text-emerald-300 transition flex items-center gap-1.5 text-[11px] font-medium">
+                                <i class="fa-solid fa-cloud-arrow-down"></i>
+                                <span>Save MP3</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIGHT DECK: Channel Library, Filter Tabs & Drag-and-Drop Queue (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col space-y-4">
+
+                <!-- Library Control & Search Header -->
+                <div class="glass-panel rounded-3xl p-5 space-y-3.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <h3 class="font-display font-bold text-base text-white">Cloud Library</h3>
+                            <span id="trackCountBadge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/20 font-semibold">
+                                0 tracks
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button id="refreshTracksBtn" title="Sync Telegram Channel" class="text-xs text-sky-300 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/20 transition font-medium">
+                                <i class="fa-solid fa-rotate" id="refreshIcon"></i>
+                                <span>Sync Bot</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter Pills -->
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <button onclick="setPlaylistFilter('all')" id="filterTab-all" class="flex-1 py-1.5 rounded-xl font-semibold bg-white/10 text-white border border-white/10 transition">
+                            All Tracks
+                        </button>
+                        <button onclick="setPlaylistFilter('favorites')" id="filterTab-favorites" class="flex-1 py-1.5 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-heart text-rose-400 text-[10px]"></i> Favorites
+                        </button>
+                        <button onclick="setPlaylistFilter('telegram')" id="filterTab-telegram" class="flex-1 py-1.5 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-brands fa-telegram text-sky-400 text-xs"></i> Telegram
+                        </button>
+                    </div>
+
+                    <!-- Instant Search Bar -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                        <input id="trackSearchInput" type="text" placeholder="Filter by title, artist, or @channel..."
+                            class="w-full bg-slate-950/70 border border-white/10 rounded-xl pl-9 pr-8 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/70 transition">
+                        <button id="clearSearchBtn" onclick="clearSearchQuery()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scrollable Tracklist & Dropzone -->
+                <div id="playlistDropzone" class="glass-panel rounded-3xl p-3.5 flex-1 flex flex-col min-h-[450px] max-h-[560px] relative transition-colors">
+                    <div id="trackList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Empty Playlist Fallback -->
+                    <div id="emptyPlaylistState" class="hidden flex-1 flex flex-col items-center justify-center p-8 text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3 animate-float-slow">
+                            <i class="fa-solid fa-cloud-music text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-semibold text-slate-200">No Matching Audio Found</h4>
+                        <p class="text-xs text-slate-400 max-w-xs mt-1 leading-relaxed">
+                            Sync your Telegram Bot channel, drop local MP3/WAV files right here, or launch our synthesized studio library.
+                        </p>
+                        <div class="flex items-center gap-2 mt-4">
+                            <button onclick="loadSampleDemoLibrary()" class="px-4 py-2 rounded-xl btn-accent-grad text-xs font-semibold text-white transition">
+                                Load Studio Synth Tracks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Keyboard Shortcuts & Status Footer -->
+        <footer class="mt-auto px-6 py-3.5 text-center text-[11px] text-slate-400 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between max-w-7xl w-full mx-auto gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                <span>AetherWave Pro &bull; Client-Side Encrypted Storage &bull; Direct Telegram MTProto/Bot Bridge</span>
+            </div>
+            <div class="hidden md:flex items-center gap-3 font-mono text-[10px] text-slate-500">
+                <span><kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">Space</kbd> Play/Pause</span>
+                <span><kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">&larr;/&rarr;</kbd> Seek 5s</span>
+                <span><kbd class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">M</kbd> Mute</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Native HTML5 Audio Element -->
+    <audio id="nativeAudio" crossorigin="anonymous" preload="auto"></audio>
+
+    <!-- TELEGRAM API CONFIGURATION MODAL -->
+    <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden transition-all duration-300 opacity-0">
+        <div id="configModalBox" class="glass-panel w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 border border-white/15 shadow-2xl transform scale-95 transition-all duration-300">
+            
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-sky-500/20 border border-sky-400/30 text-sky-400 flex items-center justify-center">
+                        <i class="fa-brands fa-telegram text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-base text-white">Telegram Cloud Sync</h3>
+                        <p class="text-xs text-slate-400">Credentials stay 100% locally in your browser's LocalStorage</p>
+                    </div>
+                </div>
+                <button id="closeConfigModalBtn" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-200 mb-1.5 flex items-center justify-between">
+                        <span>Telegram Bot Token <span class="text-sky-400">*</span></span>
+                        <a href="https://t.me/BotFather" target="_blank" rel="noopener" class="text-[11px] text-sky-400 hover:underline flex items-center gap-1">
+                            <span>@BotFather</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                    </label>
+                    <input id="inputBotToken" type="password" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+                        class="w-full bg-slate-950/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-200 mb-1.5 flex items-center justify-between">
+                        <span>Channel Username or Chat ID <span class="text-sky-400">*</span></span>
+                        <span class="text-[11px] text-slate-400 font-mono">e.g. @MyMusicVault or -100192837</span>
+                    </label>
+                    <input id="inputChannelId" type="text" placeholder="@channel_username or -100..."
+                        class="w-full bg-slate-950/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-200 mb-1.5 flex items-center justify-between">
+                        <span>CORS Stream Gateway</span>
+                        <span class="text-[11px] text-slate-400">Bypass browser stream blocks</span>
+                    </label>
+                    <select id="corsProxySelect" class="w-full bg-slate-950/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-sky-500">
+                        <option value="direct">Direct Telegram API (api.telegram.org)</option>
+                        <option value="corsproxy">Cloudflare CORS Proxy Bridge (Recommended for Web)</option>
+                    </select>
+                </div>
+
+                <div class="p-3.5 bg-sky-950/40 border border-sky-500/25 rounded-2xl text-[11px] text-sky-100/90 leading-relaxed space-y-1">
+                    <div class="font-semibold text-sky-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i> Quick Setup Checklist:
+                    </div>
+                    <p>1. Add your Bot as an <strong>Administrator</strong> in your Telegram music channel.</p>
+                    <p>2. Post or forward any MP3, FLAC, M4A, or Voice file to the channel to index it via <code class="px-1 py-0.5 rounded bg-black/40 text-sky-300">getUpdates</code>.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-white/10">
+                <button id="clearStorageBtn" class="text-xs text-rose-400 hover:text-rose-300 font-medium hover:underline">
+                    Reset Credentials
+                </button>
+                <div class="flex items-center gap-2.5">
+                    <button id="cancelModalBtn" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 transition">
+                        Cancel
+                    </button>
+                    <button id="saveConfigBtn" class="px-5 py-2 rounded-xl btn-accent-grad text-xs font-semibold text-white transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-bolt"></i>
+                        <span>Save & Sync Now</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 glass-panel px-4 py-3 rounded-2xl border border-white/15 shadow-2xl flex items-center gap-3 text-xs text-white transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 max-w-sm">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-sky-400 text-sm"></i>
+        <span id="toastMessage" class="font-medium">Configuration saved!</span>
+    </div>
+
+    <!-- Application Engine & WebAudio Synthesizer Script -->
+    <script>
+        /**
+         * Persistent Storage Keys
+         */
+        const STORAGE_KEY_TOKEN = "aw_tg_bot_token";
+        const STORAGE_KEY_CHANNEL = "aw_tg_channel_id";
+        const STORAGE_KEY_THEME = "aw_theme";
+        const STORAGE_KEY_PROXY = "aw_proxy_mode";
+        const STORAGE_KEY_FAVS = "aw_fav_tracks";
+
+        // Core Application State
+        let botToken = localStorage.getItem(STORAGE_KEY_TOKEN) || "";
+        let channelId = localStorage.getItem(STORAGE_KEY_CHANNEL) || "";
+        let proxyMode = localStorage.getItem(STORAGE_KEY_PROXY) || "direct";
+        let activeTheme = localStorage.getItem(STORAGE_KEY_THEME) || "theme-cyber";
+        let favoriteIds = JSON.parse(localStorage.getItem(STORAGE_KEY_FAVS) || "[]");
+
+        let playlist = [];
+        let filteredPlaylist = [];
+        let currentFilterTab = "all";
+        let currentTrackIndex = -1;
+        let isPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let visualizerMode = "bars"; // 'bars' | 'wave' | 'orb'
+
+        // Sleep Timer State
+        let sleepTimerMinutes = 0;
+        let sleepTimerInterval = null;
+        let sleepRemainingSeconds = 0;
+
+        // Web Audio API Graph Nodes
+        let audioContext = null;
+        let analyser = null;
+        let bassFilter = null;
+        let midFilter = null;
+        let trebleFilter = null;
+        let dataArray = null;
+        let timeDomainArray = null;
+
+        // DOM Elements Cache
+        const nativeAudio = document.getElementById("nativeAudio");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const playIcon = document.getElementById("playIcon");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const shuffleBtn = document.getElementById("shuffleBtn");
+        const repeatBtn = document.getElementById("repeatBtn");
+        const seekSlider = document.getElementById("seekSlider");
+        const currentTimeEl = document.getElementById("currentTime");
+        const durationTimeEl = document.getElementById("durationTime");
+        const currentTrackTitle = document.getElementById("currentTrackTitle");
+        const currentTrackArtist = document.getElementById("currentTrackArtist");
+        const volumeSlider = document.getElementById("volumeSlider");
+        const volumePercent = document.getElementById("volumePercent");
+        const muteBtn = document.getElementById("muteBtn");
+        const volumeIcon = document.getElementById("volumeIcon");
+        const trackListContainer = document.getElementById("trackList");
+        const emptyState = document.getElementById("emptyPlaylistState");
+        const trackSearchInput = document.getElementById("trackSearchInput");
+        const clearSearchBtn = document.getElementById("clearSearchBtn");
+        const refreshTracksBtn = document.getElementById("refreshTracksBtn");
+        const refreshIcon = document.getElementById("refreshIcon");
+        const trackCountBadge = document.getElementById("trackCountBadge");
+        const playerStatusText = document.getElementById("playerStatusText");
+        const statusIndicator = document.getElementById("statusIndicator");
+        const vinylWrapper = document.getElementById("vinylWrapper");
+        const tonearm = document.getElementById("tonearm");
+        const customArtImg = document.getElementById("customArtImg");
+        const defaultArtIcon = document.getElementById("defaultArtIcon");
+        const sourceTypeBadge = document.getElementById("sourceTypeBadge");
+        const likeCurrentIcon = document.getElementById("likeCurrentIcon");
+
+        // Modal Elements
+        const configModal = document.getElementById("configModal");
+        const configModalBox = document.getElementById("configModalBox");
+        const openConfigBtn = document.getElementById("openConfigBtn");
+        const closeConfigModalBtn = document.getElementById("closeConfigModalBtn");
+        const cancelModalBtn = document.getElementById("cancelModalBtn");
+        const saveConfigBtn = document.getElementById("saveConfigBtn");
+        const clearStorageBtn = document.getElementById("clearStorageBtn");
+        const inputBotToken = document.getElementById("inputBotToken");
+        const inputChannelId = document.getElementById("inputChannelId");
+        const corsProxySelect = document.getElementById("corsProxySelect");
+        const configBtnText = document.getElementById("configBtnText");
+
+        // Canvas Contexts
+        const freqCanvas = document.getElementById("frequencyCanvas");
+        const freqCtx = freqCanvas.getContext("2d");
+        const ambientCanvas = document.getElementById("ambientVisualizer");
+        const ambientCtx = ambientCanvas.getContext("2d");
+        const bgCanvas = document.getElementById("bgParticleCanvas");
+        const bgCtx = bgCanvas.getContext("2d");
+
+        /**
+         * Bootstrapping Application
+         */
+        window.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            loadStoredConfig();
+            setupEventListeners();
+            initStarfieldCanvas();
+            initVisualizers();
+
+            if (botToken && channelId) {
+                fetchTelegramTracks();
+            } else {
+                loadSampleDemoLibrary();
+            }
+        });
+
+        /**
+         * Procedural Stereo WAV Track Generator
+         * Generates real, rich musical ambient synth chords in-memory so the player works 100% offline/online with full WebAudio FFT analysis and zero CORS issues.
+         */
+        function createSynthesizedTrackBlobUrl(chordFreqs, bpm, durationSec = 24) {
+            const sampleRate = 22050;
+            const numSamples = sampleRate * durationSec;
+            const numChannels = 2;
+            const bytesPerSample = 2;
+            const dataSize = numSamples * numChannels * bytesPerSample;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            const writeStr = (offset, str) => {
+                for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+            };
+
+            writeStr(0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeStr(8, 'WAVE');
+            writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
+            view.setUint16(32, numChannels * bytesPerSample, true);
+            view.setUint16(34, 16, true);
+            writeStr(36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            const beatPeriod = 60 / bpm;
+            let offset = 44;
+
+            for (let i = 0; i < numSamples; i++) {
+                const t = i / sampleRate;
+                const beatPos = (t % beatPeriod) / beatPeriod;
+
+                // Kick drum pulse on every beat
+                const kickFreq = 110 * Math.exp(-beatPos * 18) + 42;
+                const kickEnv = Math.exp(-beatPos * 7.5);
+                const kick = Math.sin(2 * Math.PI * kickFreq * t) * kickEnv * 0.42;
+
+                // Hi-hat shimmer on off-beats
+                const hatPos = ((t + beatPeriod / 2) % beatPeriod) / beatPeriod;
+                const hatEnv = Math.exp(-hatPos * 35);
+                const hat = (Math.random() * 2 - 1) * hatEnv * 0.08;
+
+                // Lush Warm Pad + Arpeggiator
+                const arpIdx = Math.floor((t / (beatPeriod / 2)) % chordFreqs.length);
+                const arpFreq = chordFreqs[arpIdx] * 2;
+                const arpPos = (t % (beatPeriod / 2)) / (beatPeriod / 2);
+                const arpEnv = Math.exp(-arpPos * 5.5);
+                const arp = Math.sin(2 * Math.PI * arpFreq * t) * arpEnv * 0.18;
+
+                let padL = 0;
+                let padR = 0;
+                for (let c = 0; c < chordFreqs.length; c++) {
+                    const f = chordFreqs[c];
+                    const lfo = 1 + 0.003 * Math.sin(2 * Math.PI * (0.4 + c * 0.15) * t);
+                    padL += Math.sin(2 * Math.PI * f * lfo * t) * 0.11;
+                    padR += Math.cos(2 * Math.PI * f * (2 - lfo) * t) * 0.11;
+                }
+
+                // Fade in/out envelope
+                let masterEnv = 1;
+                if (t < 1.0) masterEnv = t;
+                else if (t > durationSec - 1.5) masterEnv = Math.max(0, (durationSec - t) / 1.5);
+
+                const leftSample = Math.max(-1, Math.min(1, (kick + hat + arp + padL) * masterEnv));
+                const rightSample = Math.max(-1, Math.min(1, (kick + hat + arp * 0.8 + padR) * masterEnv));
+
+                view.setInt16(offset, leftSample * 32767, true);
+                view.setInt16(offset + 2, rightSample * 32767, true);
+                offset += 4;
+            }
+
+            const blob = new Blob([buffer], { type: "audio/wav" });
+            return URL.createObjectURL(blob);
+        }
+
+        /**
+         * Load Built-in Studio Synthesizer Demo Library
+         */
+        function loadSampleDemoLibrary() {
+            const demoSpecs = [
+                {
+                    id: "synth_cyber_horizon",
+                    title: "Cybernetic Horizon (VIP Mix)",
+                    artist: "AetherWave Synth Lab",
+                    duration: 24,
+                    chords: [130.81, 164.81, 196.00, 246.94], // Cmaj7
+                    bpm: 118,
+                    cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80"
+                },
+                {
+                    id: "synth_neon_velvet",
+                    title: "Midnight Telegram Odyssey",
+                    artist: "Solaris Cloud Collective",
+                    duration: 24,
+                    chords: [110.00, 130.81, 164.81, 196.00], // Am7
+                    bpm: 110,
+                    cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop&q=80"
+                },
+                {
+                    id: "synth_starlight_drift",
+                    title: "Subspace Orbital Drift",
+                    artist: "Kore & The MTProto",
+                    duration: 24,
+                    chords: [146.83, 174.61, 220.00, 261.63], // Dm7
+                    bpm: 124,
+                    cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80"
+                },
+                {
+                    id: "synth_emerald_pulse",
+                    title: "Quantum Encryption Pulse",
+                    artist: "Pavel's Echo",
+                    duration: 24,
+                    chords: [98.00, 123.47, 146.83, 185.00], // Gmaj7
+                    bpm: 128,
+                    cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&auto=format&fit=crop&q=80"
+                }
+            ];
+
+            playlist = demoSpecs.map(spec => ({
+                id: spec.id,
+                title: spec.title,
+                artist: spec.artist,
+                duration: spec.duration,
+                source: "synth",
+                bpm: spec.bpm,
+                url: createSynthesizedTrackBlobUrl(spec.chords, spec.bpm, spec.duration),
+                cover: spec.cover
+            }));
+
+            applyFilterAndRender();
+
+            // Pre-select first track metadata so deck looks alive immediately
+            if (currentTrackIndex === -1 && playlist.length > 0) {
+                currentTrackIndex = 0;
+                populateTrackMetadataUI(playlist[0]);
+            }
+        }
+
+        /**
+         * Theme Engine
+         */
+        function setTheme(themeClass) {
+            document.body.className = document.body.className.replace(/theme-[a-z-]+/g, "").trim();
+            document.body.classList.add(themeClass);
+            activeTheme = themeClass;
+            localStorage.setItem(STORAGE_KEY_THEME, themeClass);
+
+            // Update checkmarks
+            document.querySelectorAll(".theme-check").forEach(el => {
+                el.classList.toggle("hidden", el.dataset.theme !== themeClass);
+            });
+
+            // Update background ambient blobs
+            const g1 = document.getElementById("bgGlow1");
+            const g2 = document.getElementById("bgGlow2");
+            if (themeClass === "theme-neon-purple") {
+                g1.className = "absolute -top-36 -left-36 w-[28rem] h-[28rem] rounded-full blur-[150px] opacity-35 bg-purple-600 transition-all duration-1000";
+                g2.className = "absolute top-1/3 -right-36 w-[32rem] h-[32rem] rounded-full blur-[170px] opacity-25 bg-rose-600 transition-all duration-1000";
+            } else if (themeClass === "theme-emerald") {
+                g1.className = "absolute -top-36 -left-36 w-[28rem] h-[28rem] rounded-full blur-[150px] opacity-35 bg-emerald-500 transition-all duration-1000";
+                g2.className = "absolute top-1/3 -right-36 w-[32rem] h-[32rem] rounded-full blur-[170px] opacity-25 bg-cyan-600 transition-all duration-1000";
+            } else if (themeClass === "theme-sunset") {
+                g1.className = "absolute -top-36 -left-36 w-[28rem] h-[28rem] rounded-full blur-[150px] opacity-35 bg-orange-500 transition-all duration-1000";
+                g2.className = "absolute top-1/3 -right-36 w-[32rem] h-[32rem] rounded-full blur-[170px] opacity-25 bg-pink-600 transition-all duration-1000";
+            } else {
+                g1.className = "absolute -top-36 -left-36 w-[28rem] h-[28rem] rounded-full blur-[150px] opacity-35 bg-sky-500 transition-all duration-1000";
+                g2.className = "absolute top-1/3 -right-36 w-[32rem] h-[32rem] rounded-full blur-[170px] opacity-25 bg-indigo-600 transition-all duration-1000";
+            }
+
+            document.getElementById("themeDropdown").classList.add("hidden");
+        }
+
+        function initTheme() {
+            setTheme(activeTheme || "theme-cyber");
+        }
+
+        /**
+         * Configuration & LocalStorage Sync
+         */
+        function loadStoredConfig() {
+            if (botToken) inputBotToken.value = botToken;
+            if (channelId) inputChannelId.value = channelId;
+            if (proxyMode) corsProxySelect.value = proxyMode;
+            updateConfigBadge();
+        }
+
+        function updateConfigBadge() {
+            const badge = document.getElementById("cloudStatusBadge");
+            if (botToken && channelId) {
+                configBtnText.textContent = channelId.startsWith("@") ? channelId : "Channel Linked";
+                badge.innerHTML = `<i class="fa-brands fa-telegram text-sky-400"></i> ${escapeHTML(channelId)}`;
+            } else {
+                configBtnText.textContent = "Telegram Sync";
+                badge.innerHTML = `<i class="fa-solid fa-wave-square text-emerald-400"></i> Cloud Synth Ready`;
+            }
+        }
+
+        function saveConfiguration() {
+            const token = inputBotToken.value.trim();
+            const channel = inputChannelId.value.trim();
+            const proxy = corsProxySelect.value;
+
+            if (!token || !channel) {
+                showToast("Both Bot Token and Channel ID are required", "fa-triangle-exclamation", true);
+                return;
+            }
+
+            botToken = token;
+            channelId = channel;
+            proxyMode = proxy;
+
+            localStorage.setItem(STORAGE_KEY_TOKEN, botToken);
+            localStorage.setItem(STORAGE_KEY_CHANNEL, channelId);
+            localStorage.setItem(STORAGE_KEY_PROXY, proxyMode);
+
+            updateConfigBadge();
+            closeModal();
+            showToast("Credentials encrypted & cached locally!", "fa-shield-halved");
+            fetchTelegramTracks();
+        }
+
+        function clearStoredConfiguration() {
+            localStorage.removeItem(STORAGE_KEY_TOKEN);
+            localStorage.removeItem(STORAGE_KEY_CHANNEL);
+            localStorage.removeItem(STORAGE_KEY_PROXY);
+            botToken = "";
+            channelId = "";
+            inputBotToken.value = "";
+            inputChannelId.value = "";
+            updateConfigBadge();
+            closeModal();
+            showToast("Telegram cache cleared", "fa-trash-can");
+            loadSampleDemoLibrary();
+        }
+
+        /**
+         * Fetch Audio Posts from Telegram Bot API
+         */
+        async function fetchTelegramTracks() {
+            if (!botToken || !channelId) {
+                openModal();
+                return;
+            }
+
+            refreshIcon.classList.add("fa-spin");
+            playerStatusText.textContent = "Syncing Telegram...";
+            statusIndicator.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+
+            try {
+                const chatIdentifier = channelId.trim();
+                const apiUrl = `https://api.telegram.org/bot${botToken}/getUpdates?offset=-100&limit=100`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                if (!data.ok) throw new Error(data.description || "Invalid Bot Token");
+
+                const parsedTracks = [];
+
+                data.result.forEach(update => {
+                    const msg = update.channel_post || update.message || update.edited_channel_post;
+                    if (!msg) return;
+
+                    const chat = msg.chat;
+                    if (chat) {
+                        const matchesUsername = chat.username && ('@' + chat.username.toLowerCase() === chatIdentifier.toLowerCase() || chat.username.toLowerCase() === chatIdentifier.toLowerCase());
+                        const matchesId = chat.id && (String(chat.id) === chatIdentifier);
+                        if ((chatIdentifier.startsWith("@") || chatIdentifier.startsWith("-100")) && !matchesUsername && !matchesId) {
+                            return;
+                        }
+                    }
+
+                    if (msg.audio) {
+                        const a = msg.audio;
+                        parsedTracks.push({
+                            id: a.file_unique_id || `tg_${msg.message_id}`,
+                            fileId: a.file_id,
+                            title: a.title || a.file_name || `Telegram Track #${msg.message_id}`,
+                            artist: a.performer || (chat ? chat.title : "Telegram Cloud"),
+                            duration: a.duration || 0,
+                            size: a.file_size || 0,
+                            source: "telegram"
+                        });
+                    } else if (msg.document && msg.document.mime_type && msg.document.mime_type.startsWith("audio/")) {
+                        const doc = msg.document;
+                        parsedTracks.push({
+                            id: doc.file_unique_id || `tg_doc_${msg.message_id}`,
+                            fileId: doc.file_id,
+                            title: doc.file_name ? doc.file_name.replace(/\.[^/.]+$/, "") : `Audio File #${msg.message_id}`,
+                            artist: chat ? chat.title : "Telegram Document",
+                            duration: 0,
+                            size: doc.file_size || 0,
+                            source: "telegram"
+                        });
+                    } else if (msg.voice) {
+                        const v = msg.voice;
+                        parsedTracks.push({
+                            id: v.file_unique_id || `tg_voice_${msg.message_id}`,
+                            fileId: v.file_id,
+                            title: `Voice Broadcast #${msg.message_id}`,
+                            artist: chat ? chat.title : "Telegram Voice",
+                            duration: v.duration || 0,
+                            size: v.file_size || 0,
+                            source: "telegram"
+                        });
+                    }
+                });
+
+                if (parsedTracks.length === 0) {
+                    showToast("No new audio found in recent bot updates. Keeping studio tracks.", "fa-circle-info");
+                    if (playlist.length === 0) loadSampleDemoLibrary();
+                } else {
+                    playlist = parsedTracks.reverse();
+                    applyFilterAndRender();
+                    showToast(`Synced ${playlist.length} track(s) from Telegram!`, "fa-check-double");
+                }
+            } catch (err) {
+                showToast(`Telegram Sync: ${err.message}`, "fa-triangle-exclamation", true);
+                if (playlist.length === 0) loadSampleDemoLibrary();
+            } finally {
+                refreshIcon.classList.remove("fa-spin");
+                playerStatusText.textContent = isPlaying ? "Streaming Hi-Fi" : "Studio Ready";
+                statusIndicator.className = isPlaying ? "w-2 h-2 rounded-full bg-emerald-400" : "w-2 h-2 rounded-full bg-sky-400";
+            }
+        }
+
+        async function resolveTelegramStreamUrl(track) {
+            if (track.streamUrl) return track.streamUrl;
+            if (!track.fileId || !botToken) return track.url || "";
+
+            try {
+                showToast("Fetching Telegram Cloud file path...", "fa-satellite-dish");
+                const res = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${track.fileId}`);
+                const data = await res.json();
+                if (!data.ok || !data.result.file_path) throw new Error(data.description || "File unavailable");
+
+                let url = `https://api.telegram.org/file/bot${botToken}/${data.result.file_path}`;
+                if (proxyMode === "corsproxy") {
+                    url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                }
+                track.streamUrl = url;
+                return url;
+            } catch (e) {
+                showToast(`Stream Error: ${e.message}`, "fa-circle-xmark", true);
+                return null;
+            }
+        }
+
+        /**
+         * Playlist Filtering & Rendering
+         */
+        function setPlaylistFilter(tab) {
+            currentFilterTab = tab;
+            ["all", "favorites", "telegram"].forEach(t => {
+                const btn = document.getElementById(`filterTab-${t}`);
+                if (t === tab) {
+                    btn.className = "flex-1 py-1.5 rounded-xl font-semibold bg-white/10 text-white border border-white/15 transition flex items-center justify-center gap-1.5";
+                } else {
+                    btn.className = "flex-1 py-1.5 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-1.5";
+                }
+            });
+            applyFilterAndRender();
+        }
+
+        function clearSearchQuery() {
+            trackSearchInput.value = "";
+            clearSearchBtn.classList.add("hidden");
+            applyFilterAndRender();
+        }
+
+        function applyFilterAndRender() {
+            const q = trackSearchInput.value.toLowerCase().trim();
+            clearSearchBtn.classList.toggle("hidden", !q);
+
+            filteredPlaylist = playlist.filter(track => {
+                if (currentFilterTab === "favorites" && !favoriteIds.includes(track.id)) return false;
+                if (currentFilterTab === "telegram" && track.source !== "telegram") return false;
+                if (q) {
+                    const matchTitle = track.title && track.title.toLowerCase().includes(q);
+                    const matchArtist = track.artist && track.artist.toLowerCase().includes(q);
+                    return matchTitle || matchArtist;
+                }
+                return true;
+            });
+
+            trackCountBadge.textContent = `${filteredPlaylist.length} ${filteredPlaylist.length === 1 ? 'track' : 'tracks'}`;
+
+            if (filteredPlaylist.length === 0) {
+                trackListContainer.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+            trackListContainer.innerHTML = filteredPlaylist.map((track, idx) => {
+                const isCurrent = playlist[currentTrackIndex] && playlist[currentTrackIndex].id === track.id;
+                const isFav = favoriteIds.includes(track.id);
+                const sourceIcon = track.source === "telegram"
+                    ? '<i class="fa-brands fa-telegram text-sky-400"></i>'
+                    : (track.source === "local" ? '<i class="fa-solid fa-hard-drive text-emerald-400"></i>' : '<i class="fa-solid fa-wave-square text-purple-400"></i>');
+
+                return `
+                    <div onclick="playTrackById('${track.id}')"
+                        class="p-3 rounded-2xl glass-card cursor-pointer flex items-center justify-between group ${isCurrent ? 'active-track-border shadow-lg' : ''}">
+                        <div class="flex items-center space-x-3.5 min-w-0 flex-1">
+                            <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center relative overflow-hidden ${isCurrent ? 'btn-accent-grad text-white font-bold' : 'bg-white/5 text-slate-400 group-hover:text-white'}">
+                                ${isCurrent && isPlaying ? `
+                                    <div class="flex items-end gap-0.5 h-4">
+                                        <span class="w-1 bg-white rounded-full eq-bar-1"></span>
+                                        <span class="w-1 bg-white rounded-full eq-bar-2"></span>
+                                        <span class="w-1 bg-white rounded-full eq-bar-3"></span>
+                                    </div>
+                                ` : (isCurrent ? '<i class="fa-solid fa-pause text-xs"></i>' : `<span class="text-xs font-mono">${idx + 1}</span>`)}
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <h4 class="text-xs font-bold truncate ${isCurrent ? 'text-white' : 'text-slate-200 group-hover:text-white'}">
+                                    ${escapeHTML(track.title)}
+                                </h4>
+                                <div class="flex items-center gap-2 text-[11px] text-slate-400 truncate mt-0.5">
+                                    ${sourceIcon}
+                                    <span class="truncate">${escapeHTML(track.artist)}</span>
+                                    ${track.size ? `<span>&bull; ${(track.size / (1024 * 1024)).toFixed(1)} MB</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 pl-2">
+                            <button onclick="event.stopPropagation(); toggleFavoriteById('${track.id}')" title="Favorite" class="p-1.5 transition text-xs ${isFav ? 'text-rose-400' : 'text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100'}">
+                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                            </button>
+                            <span class="text-[11px] font-mono text-slate-400 w-10 text-right">
+                                ${track.duration ? formatTime(track.duration) : '--:--'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function toggleFavoriteById(id) {
+            const idx = favoriteIds.indexOf(id);
+            if (idx === -1) {
+                favoriteIds.push(id);
+                showToast("Added to Favorites", "fa-heart");
+            } else {
+                favoriteIds.splice(idx, 1);
+            }
+            localStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify(favoriteIds));
+            updateCurrentFavoriteUI();
+            applyFilterAndRender();
+        }
+
+        function toggleFavoriteCurrent() {
+            if (currentTrackIndex === -1 || !playlist[currentTrackIndex]) return;
+            toggleFavoriteById(playlist[currentTrackIndex].id);
+        }
+
+        function updateCurrentFavoriteUI() {
+            if (currentTrackIndex === -1 || !playlist[currentTrackIndex]) return;
+            const isFav = favoriteIds.includes(playlist[currentTrackIndex].id);
+            likeCurrentIcon.className = isFav ? "fa-solid fa-heart text-rose-400" : "fa-regular fa-heart";
+        }
+
+        /**
+         * Core Audio Deck & WebAudio Graph
+         */
+        function populateTrackMetadataUI(track) {
+            currentTrackTitle.textContent = track.title || "Untitled Stream";
+            currentTrackArtist.textContent = track.artist || "Telegram Cloud";
+            durationTimeEl.textContent = formatTime(track.duration || 0);
+
+            if (track.source === "telegram") {
+                sourceTypeBadge.textContent = "TELEGRAM CLOUD";
+            } else if (track.source === "local") {
+                sourceTypeBadge.textContent = "LOCAL HI-FI";
+            } else {
+                sourceTypeBadge.textContent = `SYNTH ${track.bpm || 120} BPM`;
+            }
+
+            if (track.cover) {
+                customArtImg.src = track.cover;
+                customArtImg.classList.remove("hidden");
+                defaultArtIcon.classList.add("hidden");
+            } else {
+                customArtImg.classList.add("hidden");
+                defaultArtIcon.classList.remove("hidden");
+            }
+
+            updateCurrentFavoriteUI();
+        }
+
+        async function playTrackById(id) {
+            const idx = playlist.findIndex(t => t.id === id);
+            if (idx !== -1) await loadAndPlayTrack(idx);
+        }
+
+        async function loadAndPlayTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            currentTrackIndex = index;
+            const track = playlist[index];
+
+            populateTrackMetadataUI(track);
+            playerStatusText.textContent = "Buffering Stream...";
+            statusIndicator.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+
+            let streamUrl = track.url;
+            if (!streamUrl && track.fileId) {
+                streamUrl = await resolveTelegramStreamUrl(track);
+            }
+
+            if (!streamUrl) {
+                playerStatusText.textContent = "Stream Offline";
+                statusIndicator.className = "w-2 h-2 rounded-full bg-rose-500";
+                return;
+            }
+
+            nativeAudio.src = streamUrl;
+            nativeAudio.playbackRate = parseFloat(document.getElementById("speedSlider").value || 1);
+
+            setupAudioPipeline();
+            if (audioContext && audioContext.state === "suspended") {
+                await audioContext.resume();
+            }
+
+            try {
+                await nativeAudio.play();
+                setPlaybackState(true);
+            } catch (err) {
+                setPlaybackState(false);
+                showToast("Click Play to start audio stream", "fa-play");
+            }
+
+            applyFilterAndRender();
+        }
+
+        function setPlaybackState(playing) {
+            isPlaying = playing;
+            if (playing) {
+                playIcon.className = "fa-solid fa-pause";
+                vinylWrapper.classList.remove("vinyl-paused");
+                tonearm.classList.remove("tonearm-idle");
+                tonearm.classList.add("tonearm-active");
+                playerStatusText.textContent = "Streaming Hi-Fi";
+                statusIndicator.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+            } else {
+                playIcon.className = "fa-solid fa-play ml-1";
+                vinylWrapper.classList.add("vinyl-paused");
+                tonearm.classList.remove("tonearm-active");
+                tonearm.classList.add("tonearm-idle");
+                playerStatusText.textContent = "Deck Paused";
+                statusIndicator.className = "w-2 h-2 rounded-full bg-slate-400";
+            }
+        }
+
+        async function togglePlayPause() {
+            if (playlist.length === 0) return;
+            if (currentTrackIndex === -1) {
+                await loadAndPlayTrack(0);
+                return;
+            }
+
+            setupAudioPipeline();
+            if (audioContext && audioContext.state === "suspended") {
+                await audioContext.resume();
+            }
+
+            if (nativeAudio.paused) {
+                if (!nativeAudio.src) {
+                    await loadAndPlayTrack(currentTrackIndex);
+                } else {
+                    nativeAudio.play().then(() => setPlaybackState(true)).catch(() => {});
+                }
+            } else {
+                nativeAudio.pause();
+                setPlaybackState(false);
+            }
+            applyFilterAndRender();
+        }
+
+        function playNextTrack() {
+            if (playlist.length === 0) return;
+            const nextIdx = isShuffle
+                ? Math.floor(Math.random() * playlist.length)
+                : (currentTrackIndex + 1) % playlist.length;
+            loadAndPlayTrack(nextIdx);
+        }
+
+        function playPrevTrack() {
+            if (playlist.length === 0) return;
+            if (nativeAudio.currentTime > 3) {
+                nativeAudio.currentTime = 0;
+                return;
+            }
+            const prevIdx = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadAndPlayTrack(prevIdx);
+        }
+
+        /**
+         * Web Audio API 3-Band Equalizer + Analyser Pipeline
+         */
+        function setupAudioPipeline() {
+            if (audioContext) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioCtx();
+
+                const source = audioContext.createMediaElementSource(nativeAudio);
+
+                // Low Shelf 100Hz (Bass)
+                bassFilter = audioContext.createBiquadFilter();
+                bassFilter.type = "lowshelf";
+                bassFilter.frequency.value = 100;
+
+                // Peaking 1000Hz (Mid)
+                midFilter = audioContext.createBiquadFilter();
+                midFilter.type = "peaking";
+                midFilter.frequency.value = 1000;
+                midFilter.Q.value = 1;
+
+                // High Shelf 8000Hz (Treble)
+                trebleFilter = audioContext.createBiquadFilter();
+                trebleFilter.type = "highshelf";
+                trebleFilter.frequency.value = 8000;
+
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 128;
+                analyser.smoothingTimeConstant = 0.82;
+
+                // Connect Graph: Source -> Bass -> Mid -> Treble -> Analyser -> Destination
+                source.connect(bassFilter);
+                bassFilter.connect(midFilter);
+                midFilter.connect(trebleFilter);
+                trebleFilter.connect(analyser);
+                analyser.connect(audioContext.destination);
+
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                timeDomainArray = new Uint8Array(analyser.frequencyBinCount);
+            } catch (e) {
+                console.warn("WebAudio graph setup skipped:", e);
+            }
+        }
+
+        function resetEqAndSpeed() {
+            document.getElementById("eqBassSlider").value = 0;
+            document.getElementById("eqMidSlider").value = 0;
+            document.getElementById("eqTrebleSlider").value = 0;
+            document.getElementById("speedSlider").value = 1;
+
+            document.getElementById("eqBassVal").textContent = "0 dB";
+            document.getElementById("eqMidVal").textContent = "0 dB";
+            document.getElementById("eqTrebleVal").textContent = "0 dB";
+            document.getElementById("speedVal").textContent = "1.0x";
+
+            if (bassFilter) bassFilter.gain.value = 0;
+            if (midFilter) midFilter.gain.value = 0;
+            if (trebleFilter) trebleFilter.gain.value = 0;
+            nativeAudio.playbackRate = 1.0;
+            showToast("DSP Equalizer & Speed reset to flat", "fa-sliders");
+        }
+
+        /**
+         * Visualizer Modes & Canvas Animations
+         */
+        function setVisualizerMode(mode) {
+            visualizerMode = mode;
+            ["bars", "wave", "orb"].forEach(m => {
+                const btn = document.getElementById(`visBtn-${m}`);
+                if (m === mode) {
+                    btn.className = "px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/15 text-white transition";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white transition";
+                }
+            });
+        }
+
+        function initVisualizers() {
+            function renderVisualizerFrame() {
+                requestAnimationFrame(renderVisualizerFrame);
+
+                const w = freqCanvas.width;
+                const h = freqCanvas.height;
+                freqCtx.clearRect(0, 0, w, h);
+
+                const accentColor = getComputedStyle(document.body).getPropertyValue("--accent-primary").trim() || "#38bdf8";
+                const secondaryColor = getComputedStyle(document.body).getPropertyValue("--accent-secondary").trim() || "#818cf8";
+
+                if (!analyser || !isPlaying) {
+                    // Idle Breathing Wave
+                    freqCtx.beginPath();
+                    freqCtx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+                    freqCtx.lineWidth = 2;
+                    for (let x = 0; x < w; x += 6) {
+                        const y = h / 2 + Math.sin(x * 0.025 + Date.now() * 0.0025) * 6;
+                        if (x === 0) freqCtx.moveTo(x, y);
+                        else freqCtx.lineTo(x, y);
+                    }
+                    freqCtx.stroke();
+                    return;
+                }
+
+                analyser.getByteFrequencyData(dataArray);
+                analyser.getByteTimeDomainData(timeDomainArray);
+
+                if (visualizerMode === "bars") {
+                    const barCount = 44;
+                    const step = (w / barCount);
+                    const barW = step - 3;
+
+                    for (let i = 0; i < barCount; i++) {
+                        const val = dataArray[i] || 0;
+                        const barH = Math.max(4, (val / 255) * (h - 6));
+                        const x = i * step;
+                        const y = h - barH;
+
+                        const grad = freqCtx.createLinearGradient(0, h, 0, 0);
+                        grad.addColorStop(0, secondaryColor);
+                        grad.addColorStop(1, accentColor);
+
+                        freqCtx.fillStyle = grad;
+                        freqCtx.beginPath();
+                        freqCtx.roundRect(x, y, barW, barH, 3);
+                        freqCtx.fill();
+                    }
+                } else if (visualizerMode === "wave") {
+                    freqCtx.beginPath();
+                    freqCtx.lineWidth = 2.5;
+                    freqCtx.strokeStyle = accentColor;
+
+                    const sliceW = w / timeDomainArray.length;
+                    let x = 0;
+                    for (let i = 0; i < timeDomainArray.length; i++) {
+                        const v = timeDomainArray[i] / 128.0;
+                        const y = (v * h) / 2;
+                        if (i === 0) freqCtx.moveTo(x, y);
+                        else freqCtx.lineTo(x, y);
+                        x += sliceW;
+                    }
+                    freqCtx.stroke();
+                } else if (visualizerMode === "orb") {
+                    const centerY = h / 2;
+                    const bars = 36;
+                    const spacing = w / bars;
+                    for (let i = 0; i < bars; i++) {
+                        const amp = (dataArray[i] / 255) * (h / 2.1);
+                        const x = i * spacing + spacing / 2;
+                        freqCtx.strokeStyle = accentColor;
+                        freqCtx.lineWidth = 3;
+                        freqCtx.beginPath();
+                        freqCtx.moveTo(x, centerY - Math.max(2, amp));
+                        freqCtx.lineTo(x, centerY + Math.max(2, amp));
+                        freqCtx.stroke();
+                    }
+                }
+            }
+
+            function renderTurntableAura() {
+                requestAnimationFrame(renderTurntableAura);
+                const w = ambientCanvas.width;
+                const h = ambientCanvas.height;
+                ambientCtx.clearRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+                let bassEnergy = 0;
+
+                if (analyser && isPlaying && dataArray) {
+                    let sum = 0;
+                    for (let i = 0; i < 10; i++) sum += dataArray[i];
+                    bassEnergy = sum / (10 * 255);
+                }
+
+                const glowRgb = getComputedStyle(document.body).getPropertyValue("--glow-rgb").trim() || "56, 189, 248";
+
+                // Outer reactive harmonic rings
+                for (let r = 1; r <= 3; r++) {
+                    const radius = 122 + r * 14 + bassEnergy * (18 * r * 0.6);
+                    ambientCtx.beginPath();
+                    ambientCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ambientCtx.strokeStyle = `rgba(${glowRgb}, ${Math.max(0.04, 0.32 - r * 0.08 + bassEnergy * 0.25)})`;
+                    ambientCtx.lineWidth = 1.5 + bassEnergy * 2.5;
+                    ambientCtx.stroke();
+                }
+            }
+
+            renderVisualizerFrame();
+            renderTurntableAura();
+        }
+
+        /**
+         * Background Reactive Starfield Particle Canvas
+         */
+        function initStarfieldCanvas() {
+            let stars = [];
+            function resizeBg() {
+                bgCanvas.width = window.innerWidth;
+                bgCanvas.height = window.innerHeight;
+                stars = Array.from({ length: 55 }, () => ({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    r: Math.random() * 1.6 + 0.4,
+                    vx: (Math.random() - 0.5) * 0.25,
+                    vy: (Math.random() - 0.5) * 0.25,
+                    alpha: Math.random() * 0.65 + 0.2
+                }));
+            }
+            window.addEventListener("resize", resizeBg);
+            resizeBg();
+
+            function drawStars() {
+                requestAnimationFrame(drawStars);
+                bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                let boost = 1;
+                if (analyser && isPlaying && dataArray) {
+                    boost = 1 + (dataArray[2] / 255) * 2.5;
+                }
+
+                stars.forEach(s => {
+                    s.x += s.vx * boost;
+                    s.y += s.vy * boost;
+                    if (s.x < 0) s.x = bgCanvas.width;
+                    if (s.x > bgCanvas.width) s.x = 0;
+                    if (s.y < 0) s.y = bgCanvas.height;
+                    if (s.y > bgCanvas.height) s.y = 0;
+
+                    bgCtx.beginPath();
+                    bgCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    bgCtx.fillStyle = `rgba(226, 232, 240, ${s.alpha})`;
+                    bgCtx.fill();
+                });
+            }
+            drawStars();
+        }
+
+        function triggerBassDropHighlight() {
+            vinylWrapper.classList.add("scale-105");
+            setTimeout(() => vinylWrapper.classList.remove("scale-105"), 300);
+            showToast("AetherWave Pro 24-Bit DSP Engine Active", "fa-bolt");
+        }
+
+        /**
+         * Sleep Timer Cycling
+         */
+        function cycleSleepTimer() {
+            const options = [0, 15, 30, 60];
+            const nextIdx = (options.indexOf(sleepTimerMinutes) + 1) % options.length;
+            sleepTimerMinutes = options[nextIdx];
+
+            clearInterval(sleepTimerInterval);
+            const label = document.getElementById("sleepTimerLabel");
+
+            if (sleepTimerMinutes === 0) {
+                label.textContent = "Timer";
+                showToast("Sleep Timer Disabled", "fa-clock");
+                return;
+            }
+
+            sleepRemainingSeconds = sleepTimerMinutes * 60;
+            showToast(`Sleep Timer set for ${sleepTimerMinutes} minutes`, "fa-moon");
+
+            sleepTimerInterval = setInterval(() => {
+                sleepRemainingSeconds--;
+                const m = Math.floor(sleepRemainingSeconds / 60);
+                const s = sleepRemainingSeconds % 60;
+                label.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+                if (sleepRemainingSeconds <= 0) {
+                    clearInterval(sleepTimerInterval);
+                    sleepTimerMinutes = 0;
+                    label.textContent = "Timer";
+                    if (!nativeAudio.paused) togglePlayPause();
+                    showToast("Sleep Timer ended playback", "fa-bed");
+                }
+            }, 1000);
+        }
+
+        /**
+         * Event Listeners Setup
+         */
+        function setupEventListeners() {
+            playPauseBtn.addEventListener("click", togglePlayPause);
+            prevBtn.addEventListener("click", playPrevTrack);
+            nextBtn.addEventListener("click", playNextTrack);
+
+            shuffleBtn.addEventListener("click", () => {
+                isShuffle = !isShuffle;
+                shuffleBtn.classList.toggle("text-sky-400", isShuffle);
+                shuffleBtn.classList.toggle("bg-white/10", isShuffle);
+                showToast(isShuffle ? "Shuffle Queue Enabled" : "Shuffle Disabled", "fa-shuffle");
+            });
+
+            repeatBtn.addEventListener("click", () => {
+                isRepeat = !isRepeat;
+                nativeAudio.loop = isRepeat;
+                repeatBtn.classList.toggle("text-sky-400", isRepeat);
+                repeatBtn.classList.toggle("bg-white/10", isRepeat);
+                showToast(isRepeat ? "Repeat Current Track On" : "Repeat Off", "fa-repeat");
+            });
+
+            // DSP Drawer Toggle & Sliders
+            document.getElementById("toggleEqDrawerBtn").addEventListener("click", () => {
+                document.getElementById("dspDrawer").classList.toggle("hidden");
+            });
+
+            document.getElementById("eqBassSlider").addEventListener("input", (e) => {
+                const v = parseFloat(e.target.value);
+                document.getElementById("eqBassVal").textContent = `${v > 0 ? '+' : ''}${v} dB`;
+                if (bassFilter) bassFilter.gain.value = v;
+            });
+
+            document.getElementById("eqMidSlider").addEventListener("input", (e) => {
+                const v = parseFloat(e.target.value);
+                document.getElementById("eqMidVal").textContent = `${v > 0 ? '+' : ''}${v} dB`;
+                if (midFilter) midFilter.gain.value = v;
+            });
+
+            document.getElementById("eqTrebleSlider").addEventListener("input", (e) => {
+                const v = parseFloat(e.target.value);
+                document.getElementById("eqTrebleVal").textContent = `${v > 0 ? '+' : ''}${v} dB`;
+                if (trebleFilter) trebleFilter.gain.value = v;
+            });
+
+            document.getElementById("speedSlider").addEventListener("input", (e) => {
+                const v = parseFloat(e.target.value);
+                document.getElementById("speedVal").textContent = `${v.toFixed(2)}x`;
+                nativeAudio.playbackRate = v;
+            });
+
+            // Sleep Timer
+            document.getElementById("sleepTimerBtn").addEventListener("click", cycleSleepTimer);
+
+            // Local Audio File Importer
+            document.getElementById("localAudioInput").addEventListener("change", (e) => {
+                handleLocalFiles(e.target.files);
+            });
+
+            // Drag and Drop Local Audio Files onto Playlist
+            const dropzone = document.getElementById("playlistDropzone");
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("border-sky-400");
+            });
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("border-sky-400");
+            });
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("border-sky-400");
+                if (e.dataTransfer.files.length) {
+                    handleLocalFiles(e.dataTransfer.files);
+                }
+            });
+
+            // Native Audio Element Events
+            nativeAudio.addEventListener("timeupdate", () => {
+                if (!isNaN(nativeAudio.duration) && nativeAudio.duration > 0) {
+                    seekSlider.value = (nativeAudio.currentTime / nativeAudio.duration) * 100;
+                    currentTimeEl.textContent = formatTime(nativeAudio.currentTime);
+                    durationTimeEl.textContent = formatTime(nativeAudio.duration);
+                }
+            });
+
+            nativeAudio.addEventListener("ended", () => {
+                if (!isRepeat) playNextTrack();
+            });
+
+            seekSlider.addEventListener("input", () => {
+                if (!isNaN(nativeAudio.duration) && nativeAudio.duration > 0) {
+                    nativeAudio.currentTime = (seekSlider.value / 100) * nativeAudio.duration;
+                }
+            });
+
+            // Volume Controls
+            volumeSlider.addEventListener("input", (e) => {
+                const vol = parseFloat(e.target.value);
+                nativeAudio.volume = vol;
+                nativeAudio.muted = false;
+                volumePercent.textContent = `${Math.round(vol * 100)}%`;
+                updateVolumeIcon(vol);
+            });
+
+            muteBtn.addEventListener("click", () => {
+                nativeAudio.muted = !nativeAudio.muted;
+                if (nativeAudio.muted) {
+                    volumeIcon.className = "fa-solid fa-volume-xmark text-rose-400 text-xs";
+                    volumePercent.textContent = "MUTE";
+                } else {
+                    volumePercent.textContent = `${Math.round(nativeAudio.volume * 100)}%`;
+                    updateVolumeIcon(nativeAudio.volume);
+                }
+            });
+
+            function updateVolumeIcon(v) {
+                if (v === 0) volumeIcon.className = "fa-solid fa-volume-off text-xs";
+                else if (v < 0.5) volumeIcon.className = "fa-solid fa-volume-low text-xs";
+                else volumeIcon.className = "fa-solid fa-volume-high text-xs";
+            }
+
+            // Search & Refresh
+            trackSearchInput.addEventListener("input", applyFilterAndRender);
+            refreshTracksBtn.addEventListener("click", fetchTelegramTracks);
+
+            // Modal Events
+            openConfigBtn.addEventListener("click", openModal);
+            closeConfigModalBtn.addEventListener("click", closeModal);
+            cancelModalBtn.addEventListener("click", closeModal);
+            saveConfigBtn.addEventListener("click", saveConfiguration);
+            clearStorageBtn.addEventListener("click", clearStoredConfiguration);
+            configModal.addEventListener("click", (e) => {
+                if (e.target === configModal) closeModal();
+            });
+
+            // Copy & Download Actions
+            document.getElementById("directFileBtn").addEventListener("click", () => {
+                if (currentTrackIndex !== -1 && playlist[currentTrackIndex]) {
+                    copyTrackLink(playlist[currentTrackIndex].id);
+                } else {
+                    showToast("Select a track first", "fa-circle-info");
+                }
+            });
+
+            document.getElementById("downloadBtn").addEventListener("click", () => {
+                if (currentTrackIndex !== -1 && nativeAudio.src) {
+                    const a = document.createElement("a");
+                    a.href = nativeAudio.src;
+                    a.download = `${playlist[currentTrackIndex].title || 'aetherwave_track'}.wav`;
+                    a.target = "_blank";
+                    a.click();
+                    showToast("Downloading audio stream...", "fa-cloud-arrow-down");
+                } else {
+                    showToast("Play a track first to download", "fa-circle-info");
+                }
+            });
+
+            // Theme Dropdown
+            const themeBtn = document.getElementById("themeToggleBtn");
+            const themeDrop = document.getElementById("themeDropdown");
+            themeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                themeDrop.classList.toggle("hidden");
+            });
+            document.addEventListener("click", () => themeDrop.classList.add("hidden"));
+
+            // Global Keyboard Shortcuts
+            window.addEventListener("keydown", (e) => {
+                if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+                if (e.code === "Space") {
+                    e.preventDefault();
+                    togglePlayPause();
+                } else if (e.code === "ArrowRight") {
+                    if (!isNaN(nativeAudio.duration)) nativeAudio.currentTime = Math.min(nativeAudio.currentTime + 5, nativeAudio.duration);
+                } else if (e.code === "ArrowLeft") {
+                    nativeAudio.currentTime = Math.max(nativeAudio.currentTime - 5, 0);
+                } else if (e.code === "KeyM") {
+                    muteBtn.click();
+                }
+            });
+        }
+
+        function handleLocalFiles(files) {
+            const added = [];
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith("audio/")) {
+                    const url = URL.createObjectURL(file);
+                    added.push({
+                        id: `local_${Date.now()}_${Math.random()}`,
+                        title: file.name.replace(/\.[^/.]+$/, ""),
+                        artist: "Local Studio File",
+                        duration: 0,
+                        size: file.size,
+                        source: "local",
+                        url: url
+                    });
+                }
+            });
+            if (added.length > 0) {
+                playlist = [...added, ...playlist];
+                setPlaylistFilter("all");
+                loadAndPlayTrack(0);
+                showToast(`Imported ${added.length} local audio file(s)!`, "fa-folder-Check");
+            }
+        }
+
+        function openModal() {
+            configModal.classList.remove("hidden");
+            setTimeout(() => {
+                configModal.classList.remove("opacity-0");
+                configModalBox.classList.remove("scale-95");
+                configModalBox.classList.add("scale-100");
+            }, 15);
+        }
+
+        function closeModal() {
+            configModal.classList.add("opacity-0");
+            configModalBox.classList.remove("scale-100");
+            configModalBox.classList.add("scale-95");
+            setTimeout(() => configModal.classList.add("hidden"), 250);
+        }
+
+        function copyTrackLink(trackId) {
+            const track = playlist.find(t => t.id === trackId);
+            if (!track) return;
+            const link = track.streamUrl || track.url || `https://api.telegram.org/bot${botToken}/getFile?file_id=${track.fileId}`;
+            const temp = document.createElement("input");
+            temp.value = link;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            showToast("Stream link copied to clipboard!", "fa-copy");
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec) || sec < 0) return "00:00";
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function escapeHTML(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        let toastTimer;
+        function showToast(msg, icon = "fa-circle-check", isError = false) {
+            clearTimeout(toastTimer);
+            const toast = document.getElementById("toastNotification");
+            document.getElementById("toastMessage").textContent = msg;
+            document.getElementById("toastIcon").className = `fa-solid ${icon} ${isError ? 'text-rose-400' : 'text-sky-400'} text-sm`;
+            toast.classList.remove("translate-y-20", "opacity-0", "pointer-events-none");
+            toastTimer = setTimeout(() => {
+                toast.classList.add("translate-y-20", "opacity-0", "pointer-events-none");
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
